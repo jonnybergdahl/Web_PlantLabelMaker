@@ -132,6 +132,8 @@ function App() {
                 max="300"
               />
             </div>
+          </div>
+          <div className="input-row">
             <div className="input-group">
               <label htmlFor="labelThickness">Thickness (mm)</label>
               <input
