@@ -21,6 +21,7 @@ A web-based 3D generator for creating custom, multi-material plant labels. This 
 - **Materials**: 3MF export uses separate objects for body and text.
 - **Fonts**: Roboto Bold (Default), Montserrat, Open Sans, Bebas Neue, Ubuntu.
 
+
 ## Getting Started
 
 ### Prerequisites
