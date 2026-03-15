@@ -139,5 +139,8 @@ export async function createLabelModel(plantName, latinName, width = 15, length 
     textGroup.add(plantMesh);
     textGroup.add(latinMesh);
 
+    // Uppdatera alla matriser så att barnens positioner/rotationer stämmer
+    textGroup.updateMatrixWorld(true);
+
     return { bodyMesh, textGroup };
 }
