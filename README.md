@@ -1,5 +1,7 @@
 # Plant Label Maker
 
+**Live Demo: [https://jonnybergdahl.github.io/Web_PlantLabelMaker/](https://jonnybergdahl.github.io/Web_PlantLabelMaker/)**
+
 A web-based 3D generator for creating custom, multi-material plant labels. This application allows you to design a 150mm x 15mm (default) plant stake with inset, extruded text for both the common Plant Name and the Latin Name, optimized for 3D printing.
 
 ## Features
@@ -9,6 +11,7 @@ A web-based 3D generator for creating custom, multi-material plant labels. This 
 - **Font Selection**: Choose from multiple bold fonts (Roboto, Montserrat, Open Sans, Bebas Neue, Ubuntu) for the label text.
 - **Dynamic Text Scaling**: Automatically fits the Plant Name and Latin Name within the label's width.
 - **Multi-Material 3MF Export**: Generates a 3MF file with separate objects for the label body (gray) and text (white), perfect for multi-color 3D printers.
+- **Dual-File STL Export (ZIP)**: Exports both body and text as separate STL files in a single ZIP archive for easy multi-part import in slicers like PrusaSlicer.
 - **60-Degree Pointed Tip**: Designed for easy insertion into soil.
 - **Rounded Corners**: 3mm radius fillets on the top corners for a professional finish.
 - **Dark/Light Mode Support**: Automatically follows system settings with a manual toggle.
@@ -18,7 +21,7 @@ A web-based 3D generator for creating custom, multi-material plant labels. This 
 
 - **Default Dimensions**: 150mm (L) x 15mm (W) x 1.6mm (T).
 - **Text Geometry**: 1.0mm thick, submerged 0.8mm into the label (0.2mm protrusion).
-- **Materials**: 3MF export uses separate objects for body and text.
+- **Materials**: 3MF export uses separate objects for body and text. STL export provides two separate files.
 - **Fonts**: Roboto Bold (Default), Montserrat, Open Sans, Bebas Neue, Ubuntu.
 
 
