@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
 import JSZip from 'jszip';
 
@@ -18,7 +17,7 @@ function downloadBlob(blob, filename) {
  * Main export function for STL.
  * Exports body and text as separate binary STL files bundled in a single ZIP.
  * Slicers like PrusaSlicer and Bambu Studio can then import them together
- * to treat them as separate parts for multi-color printing.
+ * to treat them as separate parts for multicolor printing.
  */
 export async function exportToSTL(bodyMesh, textGroup, filename = 'plant_label.stl') {
     const exporter = new STLExporter();
