@@ -10,43 +10,59 @@ export function createLabelShape(width = 15, length = 150, radius = 3) {
     const shape = new THREE.Shape();
     const hw = width / 2;
     const angle = 30 * Math.PI / 180;
-    const tipLength = hw / Math.tan(angle);
-    const offset = radius * Math.tan((Math.PI / 2 - angle) / 2);
 
-    // --- START AT THE TIP ---
+    // Mathematically, the distance from the tip (0,0) to the "shoulder" center
+    const tipLength = hw / Math.tan(angle);
+
+    // 1. Start at the tip
     shape.moveTo(0, 0);
 
-    // 1. Upper Slant
-    // Stopping before the shoulder
-    shape.lineTo(tipLength - (radius * Math.sin(angle)), hw - (radius * (1 - Math.cos(angle))));
+    // 2. Upper Slant
+    // We go to the point where the slant meets the radius of the shoulder
+    const slantLength = hw / Math.sin(angle);
+    const stopDist = slantLength - (radius / Math.tan(angle / 2));
+    shape.lineTo(Math.cos(angle) * stopDist, Math.sin(angle) * stopDist);
 
-    // 2. The Upper Shoulder Curve
-    shape.absarc(tipLength + offset, hw - radius, radius, Math.PI - (Math.PI/2 - angle), Math.PI / 2, true);
-    // 3. Top straight edge
+    // 3. The Upper Shoulder Arc
+    shape.absarc(
+        tipLength + (radius * Math.tan((Math.PI/2 - angle)/2)),
+        hw - radius,
+        radius,
+        Math.PI - (Math.PI/2 - angle),
+        Math.PI / 2,
+        true // Changed from false to true to push the bulge OUT
+    );
+
+    // 4. Top straight edge
     shape.lineTo(length - radius, hw);
 
-    // 4. Back-Top Corner
+    // 5. Back Top Corner
     shape.absarc(length - radius, hw - radius, radius, Math.PI / 2, 0, true);
 
-    // 5. Back vertical edge
+    // 6. Back edge
     shape.lineTo(length, -hw + radius);
 
-    // 6. Back-Bottom Corner
+    // 7. Back Bottom Corner
     shape.absarc(length - radius, -hw + radius, radius, 0, -Math.PI / 2, true);
 
-    // 7. Bottom straight edge
-    shape.lineTo(tipLength + offset, -hw);
+    // 8. Bottom edge
+    shape.lineTo(tipLength + (radius * Math.tan((Math.PI/2 - angle)/2)), -hw);
 
-    // 8. Lower Shoulder Curve
-    // Sweeping back to meet the lower slant
-    shape.absarc(tipLength + offset, -hw + radius, radius, -Math.PI / 2, -Math.PI + (Math.PI/2 - angle), true);
+// 9. Lower Shoulder Arc
+    shape.absarc(
+        tipLength + (radius * Math.tan((Math.PI/2 - angle)/2)),
+        -hw + radius,
+        radius,
+        -Math.PI / 2,
+        -Math.PI + (Math.PI/2 - angle),
+        true // Changed from false to true to push the bulge OUT
+    );
 
-    // 9. Final Slant back to the Tip
+    // 10. Back to tip
     shape.lineTo(0, 0);
-
     shape.closePath();
 
-    // --- THE HOLE ---
+    // --- HOLE ---
     const holePath = new THREE.Path();
     holePath.absarc(14, 0, 2, 0, Math.PI * 2, false);
     shape.holes.push(holePath);
