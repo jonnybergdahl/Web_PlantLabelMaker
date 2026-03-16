@@ -9,53 +9,46 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 export function createLabelShape(width = 15, length = 150, radius = 3) {
     const shape = new THREE.Shape();
     const hw = width / 2;
-
-    // Vinkeln för spetsen är 30 grader mot centrumlinjen (totalt 60)
     const angle = 30 * Math.PI / 180;
-
-    // För att rundningen ska tangera både den vinklade linjen och den raka
-    // behöver vi förskjuta startpunkten för rundningen.
-    const offset = radius * Math.tan((Math.PI / 2 - angle) / 2);
     const tipLength = hw / Math.tan(angle);
+    const offset = radius * Math.tan((Math.PI / 2 - angle) / 2);
 
-    // --- ÖVERKONTUR ---
-    shape.moveTo(0, 0); // Start i spetsen
+    // --- START AT THE TIP ---
+    shape.moveTo(0, 0);
 
-    // Dra linjen mot axeln, men stanna innan hörnet så vi kan runda
-    const shoulderX = tipLength;
-    shape.lineTo(shoulderX - (radius * Math.sin(angle)), hw - (radius * (1 - Math.cos(angle))));
+    // 1. Upper Slant
+    // Stopping before the shoulder
+    shape.lineTo(tipLength - (radius * Math.sin(angle)), hw - (radius * (1 - Math.cos(angle))));
 
-    // Runda av axeln (övergång spets -> rak del)
-    // Vi använder arc för att skapa en mjuk sväng
-    shape.absarc(shoulderX + offset, hw - radius, radius, Math.PI - (Math.PI/2 - angle), Math.PI / 2, true);
-
-    // Rak långsida fram till toppen
+    // 2. The Upper Shoulder Curve
+    shape.absarc(tipLength + offset, hw - radius, radius, Math.PI - (Math.PI/2 - angle), Math.PI / 2, true);
+    // 3. Top straight edge
     shape.lineTo(length - radius, hw);
 
-    // Runda av toppen (hörnet)
+    // 4. Back-Top Corner
     shape.absarc(length - radius, hw - radius, radius, Math.PI / 2, 0, true);
 
-    // --- UNDERKONTUR ---
-    // Kortsidan i toppen
+    // 5. Back vertical edge
     shape.lineTo(length, -hw + radius);
 
-    // Runda av andra hörnet i toppen
+    // 6. Back-Bottom Corner
     shape.absarc(length - radius, -hw + radius, radius, 0, -Math.PI / 2, true);
 
-    // Rak långsida tillbaka mot spetsen
-    shape.lineTo(shoulderX + offset, -hw);
+    // 7. Bottom straight edge
+    shape.lineTo(tipLength + offset, -hw);
 
-    // Runda av axeln på undersidan
-    shape.absarc(shoulderX + offset, -hw + radius, radius, -Math.PI / 2, -Math.PI + (Math.PI/2 - angle), true);
+    // 8. Lower Shoulder Curve
+    // Sweeping back to meet the lower slant
+    shape.absarc(tipLength + offset, -hw + radius, radius, -Math.PI / 2, -Math.PI + (Math.PI/2 - angle), true);
 
-    // Gå tillbaka till spetsen
+    // 9. Final Slant back to the Tip
     shape.lineTo(0, 0);
 
-    // --- HÅLET ---
-    const holeRadius = 2; // Lite mindre för att rymmas snyggt
+    shape.closePath();
+
+    // --- THE HOLE ---
     const holePath = new THREE.Path();
-    const holeX = 14;
-    holePath.absarc(holeX, 0, holeRadius, 0, Math.PI * 2, true);
+    holePath.absarc(14, 0, 2, 0, Math.PI * 2, false);
     shape.holes.push(holePath);
 
     return shape;
@@ -65,82 +58,76 @@ export function createLabelShape(width = 15, length = 150, radius = 3) {
  * BYGGER 3D-MODELLEN (STICKA + TEXT)
  */
 export async function createLabelModel(plantName, latinName, width = 15, length = 150, thickness = 1.6, fontPath = 'fonts/roboto_bold.json') {
-    // 1. Skapa stickan
+    // 1. Skapa stickan (The Body)
     const shape = createLabelShape(width, length, 3);
-    let bodyGeometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
-    
-    // Förbättra geometri genom att slå samman hörn för smidigare kanter och bättre 3MF-export
+    shape.closePath();
+    let bodyGeometry = new THREE.ExtrudeGeometry(shape, {
+        depth: thickness,
+        bevelEnabled: false,
+        curveSegments: 12
+    });
+
     bodyGeometry = BufferGeometryUtils.mergeVertices(bodyGeometry);
     bodyGeometry.computeVertexNormals();
-    
+
+    // Create the body mesh
     const bodyMesh = new THREE.Mesh(bodyGeometry, new THREE.MeshStandardMaterial({ color: 0x808080 }));
 
     // 2. Ladda font
     const loader = new FontLoader();
     const font = await new Promise((resolve, reject) => {
-        console.log("Loading font:", fontPath);
         loader.load(fontPath, resolve, undefined, reject);
     });
 
-    const textGroup = new THREE.Group();
-    const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-
-    // Hjälpfunktion för att skapa text
-    const createCorrectText = (text, size, x, y) => {
+    // Internal helper to create "Baked" geometry (coordinates fixed in space)
+    const createBakedTextGeometry = (text, size, x, y) => {
         let geo = new TextGeometry(text, {
             font: font,
             size: size,
-            depth: 1.0, // Text should be 1mm thick in Z
-            curveSegments: 3, // Reduces triangle count and prevents self-intersections
+            depth: 1.0,
+            curveSegments: 3,
             bevelEnabled: false
         });
 
-        // Strip away unnecessary data that often corrupts 3MF exports
         if (geo.attributes.uv) geo.deleteAttribute('uv');
-        if (geo.attributes.normal) geo.deleteAttribute('normal');
-
-        // Clean geometry before creating mesh
         geo = BufferGeometryUtils.mergeVertices(geo);
-        geo.computeVertexNormals();
-        geo.computeBoundingBox();
 
-        const mesh = new THREE.Mesh(geo, textMaterial);
-        // Start text at Z = thickness - 0.8 (submerged 0.8mm into stake), ending at Z = thickness + 0.2 (0.2mm protrusion)
-        mesh.position.set(x, y, thickness - 0.8);
-        mesh.rotation.z = Math.PI;
+        // Apply the transforms (Position and Rotation) directly to the vertices
+        const matrix = new THREE.Matrix4();
+        const position = new THREE.Vector3(x, y, thickness - 0.8);
+        const rotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI));
+        const scale = new THREE.Vector3(1, 1, 1);
 
-        // Ensure the geometry is mathematically sound after all transformations (not strictly required on the geo itself if we use mesh transforms, but done for robustness)
-        mesh.updateMatrixWorld();
-        
-        return mesh;
+        matrix.compose(position, rotation, scale);
+        geo.applyMatrix4(matrix);
+
+        return geo;
     };
 
-    // Text configuration
+    // Calculate positions
     const padding = 2;
     const availableWidth = width - (padding * 2);
-    
-    const plantSize = Math.min(6, availableWidth * 0.6); // Slightly bigger
+    const plantSize = Math.min(6, availableWidth * 0.6);
     const latinSize = plantSize * 0.65;
     const gap = 2;
-
-    // "Left aligned" means they should start at the same X (which is length-5, the rounded end).
-    // The text runs "down the stick" from X=150 towards X=0.
-    // Due to mesh.rotation.z = Math.PI, the characters are rotated 180 degrees.
-    // This makes the text read correctly top-to-bottom if you hold the label vertically (rounded end up),
-    // but the local Y (letter height) maps to -world Y.
-    // To ensure "Plant Name" is ABOVE "Latin Name" in this orientation, we swap their local Y positions.
     const startY = (width / 2) - padding;
 
-    // Latin name is placed at the "top" of the local coordinate system (which becomes the bottom visually).
-    const latinMesh = createCorrectText(latinName, latinSize, length - 5, startY);
-    // Plant name is placed below it (which becomes the top visually).
-    const plantMesh = createCorrectText(plantName, plantSize, length - 5, startY - latinSize - gap);
+    // Create the two text geometries
+    const latinGeo = createBakedTextGeometry(latinName, latinSize, length - 5, startY);
+    const plantGeo = createBakedTextGeometry(plantName, plantSize, length - 5, startY - latinSize - gap);
 
-    textGroup.add(plantMesh);
-    textGroup.add(latinMesh);
+    // MERGE the two text geometries into ONE single geometry
+    const mergedTextGeometry = BufferGeometryUtils.mergeGeometries([latinGeo, plantGeo]);
+    mergedTextGeometry.computeVertexNormals();
 
-    // Uppdatera alla matriser så att barnens positioner/rotationer stämmer
-    textGroup.updateMatrixWorld(true);
+    // Create ONE mesh for all text
+    const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const combinedTextMesh = new THREE.Mesh(mergedTextGeometry, textMaterial);
+    combinedTextMesh.name = "LabelText_Merged";
+
+    // Return them. We put the mesh in a group just to keep your existing export logic happy.
+    const textGroup = new THREE.Group();
+    textGroup.add(combinedTextMesh);
 
     return { bodyMesh, textGroup };
 }

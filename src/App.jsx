@@ -4,6 +4,7 @@ import { OrbitControls, PerspectiveCamera, Stage } from '@react-three/drei';
 import { Download, Leaf, Sun, Moon } from 'lucide-react';
 import { createLabelModel } from './utils/labelGenerator';
 import { exportTo3MF } from './utils/export3mf';
+import { exportToSTL } from './utils/exportStl';
 import './App.css';
 
 function Preview({ meshes }) {
@@ -55,6 +56,12 @@ function App() {
   const handleDownload = async () => {
     if (meshes) {
       await exportTo3MF(meshes.bodyMesh, meshes.textGroup, `${plantName.replace(/\s+/g, '_')}_label.3mf`);
+    }
+  };
+
+  const handleDownloadSTL = async () => {
+    if (meshes) {
+      await exportToSTL(meshes.bodyMesh, meshes.textGroup, `${plantName.replace(/\s+/g, '_')}_label.stl`);
     }
   };
 
@@ -148,9 +155,16 @@ function App() {
             </div>
           </div>
           <p className="spec-info">{labelLength}x{labelWidth}x{labelThickness} mm Label • 1.0 mm Text • 0.8 mm Inset</p>
-          <button className="download-button" onClick={handleDownload}>
-            <Download size={20} /> Download 3MF
-          </button>
+          <div className="button-row">
+            <button className="download-button" onClick={handleDownload}>
+              <Download size={20} /> Download 3MF
+            </button>
+          </div>
+          <div className="button-row">
+            <button className="download-button secondary" onClick={handleDownloadSTL}>
+              <Download size={20} /> Download STL
+            </button>
+          </div>
         </div>
 
         <div className="preview-container">
