@@ -1,29 +1,18 @@
 # Plant Label Maker
 
-**Live Demo: [https://jonnybergdahl.github.io/Web_PlantLabelMaker/](https://jonnybergdahl.github.io/Web_PlantLabelMaker/)**
-
 A web-based 3D generator for creating custom, multi-material plant labels. This application allows you to design a 150mm x 15mm (default) plant stake with inset, extruded text for both the common Plant Name and the Latin Name, optimized for 3D printing.
+
+**Live Demo: [https://jonnybergdahl.github.io/Web_PlantLabelMaker/](https://jonnybergdahl.github.io/Web_PlantLabelMaker/)**
 
 ## Features
 
 - **Real-time 3D Preview**: Visualize your label as you adjust the text and dimensions.
-- **Customizable Dimensions**: Adjust the width, length (height), and thickness of the label.
-- **Font Selection**: Choose from multiple bold fonts (Roboto, Montserrat, Open Sans, Bebas Neue, Ubuntu) for the label text.
-- **Dynamic Text Scaling**: Automatically fits the Plant Name and Latin Name within the label's width.
-- **Multi-Material 3MF Export**: Generates a 3MF file with separate objects for the label body (gray) and text (white), perfect for multi-color 3D printers.
-- **Dual-File STL Export (ZIP)**: Exports both body and text as separate STL files in a single ZIP archive for easy multi-part import in slicers like PrusaSlicer.
-- **60-Degree Pointed Tip**: Designed for easy insertion into soil.
-- **Rounded Corners**: 3mm radius fillets on the top corners for a professional finish.
+- **Customizable Dimensions**: Adjust the width, length, and thickness of the label.
+- **Font Selection**: Choose from multiple fonts for the label text.
+- **Emboss/Inset Modes**: Toggle between insetting text (0.8mm deep) and embossing (0.2mm on the surface) for both single and multi extruder 3D printing.
+- **Multi-Material 3MF Export**: Generates a 3MF file with separate objects for the label body and text (white).
+- **Dual-File STL Export (ZIP)**: Exports both body and text as separate STL files in a single ZIP archive.
 - **Dark/Light Mode Support**: Automatically follows system settings with a manual toggle.
-- **Clean 3D Geometry**: Optimized meshes with merged vertices and correct normals to ensure manifold files for slicing.
-
-## Specifications
-
-- **Default Dimensions**: 150mm (L) x 15mm (W) x 1.6mm (T).
-- **Text Geometry**: 1.0mm thick, submerged 0.8mm into the label (0.2mm protrusion).
-- **Materials**: 3MF export uses separate objects for body and text. STL export provides two separate files.
-- **Fonts**: Roboto Bold (Default), Montserrat, Open Sans, Bebas Neue, Ubuntu.
-
 
 ## Getting Started
 
@@ -74,4 +63,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Credits
 
-Created by [Jonny Bergdahl](https://github.com/jonnybergdahl).
+Created by [Jonny Bergdahl](https://github.com/jonnybergdahl). Code is written with the help of Jetbrains Junie.
