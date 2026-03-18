@@ -113,6 +113,8 @@ main {
   padding-top: 40px;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  max-height: 100%;
 }
 
 .input-row {
@@ -252,6 +254,8 @@ footer a:hover {
   }
   .controls {
     width: 100%;
+    max-height: none;
+    overflow-y: visible;
     box-sizing: border-box;
   }
   .preview-container {
