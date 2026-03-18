@@ -4,6 +4,8 @@ A web-based 3D generator for creating custom, multi-material plant labels. This 
 
 **Live Demo: [https://jonnybergdahl.github.io/Web_PlantLabelMaker/](https://jonnybergdahl.github.io/Web_PlantLabelMaker/)**
 
+![Screenshot](assets/screenshot.png)
+
 ## Features
 
 - **Real-time 3D Preview**: Visualize your label as you adjust the text and dimensions.
