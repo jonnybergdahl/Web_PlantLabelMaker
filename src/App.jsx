@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Stage } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { Download, Leaf, Sun, Moon } from 'lucide-react';
 import { createLabelModel } from './utils/labelGenerator';
 import { exportTo3MF } from './utils/export3mf';
@@ -27,6 +27,7 @@ function App() {
   const [labelWidth, setLabelWidth] = useState(15);
   const [labelLength, setLabelLength] = useState(150);
   const [labelThickness, setLabelThickness] = useState(1.6);
+  const [embossOnly, setEmbossOnly] = useState(false);
   const [font, setFont] = useState('fonts/roboto_bold.json');
   const [meshes, setMeshes] = useState(null);
   const [theme, setTheme] = useState(() => {
@@ -48,10 +49,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    createLabelModel(plantName, latinName, labelWidth, labelLength, labelThickness, font)
+    createLabelModel(plantName, latinName, labelWidth, labelLength, labelThickness, font, embossOnly)
       .then(setMeshes)
       .catch(console.error);
-  }, [plantName, latinName, labelWidth, labelLength, labelThickness, font]);
+  }, [plantName, latinName, labelWidth, labelLength, labelThickness, font, embossOnly]);
 
   const handleDownload = async () => {
     if (meshes) {
@@ -118,17 +119,6 @@ function App() {
           </div>
           <div className="input-row">
             <div className="input-group">
-              <label htmlFor="labelWidth">Width (mm)</label>
-              <input
-                id="labelWidth"
-                type="number"
-                value={labelWidth}
-                onChange={(e) => setLabelWidth(Number(e.target.value))}
-                min="10"
-                max="50"
-              />
-            </div>
-            <div className="input-group">
               <label htmlFor="labelLength">Length (mm)</label>
               <input
                 id="labelLength"
@@ -137,6 +127,17 @@ function App() {
                 onChange={(e) => setLabelLength(Number(e.target.value))}
                 min="50"
                 max="300"
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="labelWidth">Width (mm)</label>
+              <input
+                id="labelWidth"
+                type="number"
+                value={labelWidth}
+                onChange={(e) => setLabelWidth(Number(e.target.value))}
+                min="10"
+                max="50"
               />
             </div>
           </div>
@@ -154,7 +155,20 @@ function App() {
               />
             </div>
           </div>
-          <p className="spec-info">{labelLength}x{labelWidth}x{labelThickness} mm Label • 1.0 mm Text • 0.8 mm Inset</p>
+          <div className="input-group checkbox">
+            <input
+              id="embossOnly"
+              type="checkbox"
+              checked={embossOnly}
+              onChange={(e) => setEmbossOnly(e.target.checked)}
+            />
+            <label htmlFor="embossOnly">Emboss only</label>
+          </div>
+          <p className="spec-info">
+            Label: {labelLength}x{labelWidth}x{labelThickness} mm
+            <br />
+            Text: {embossOnly ? '0.2 mm Emboss' : '1.0 mm/ 0.8 mm Inset'}
+          </p>
           <div className="button-row">
             <button className="download-button" onClick={handleDownload}>
               <Download size={20} /> Download 3MF
@@ -178,8 +192,8 @@ function App() {
 
       <footer>
         <p>
-          © 2024 <a href="https://github.com/jonnybergdahl/Web_PlantLabelMaker" target="_blank" rel="noopener noreferrer">Jonny Bergdahl</a> • 
-          MIT License • 
+          Copyright ©2026 <a href="https://github.com/jonnybergdahl/Web_PlantLabelMaker" target="_blank" rel="noopener noreferrer">Jonny Bergdahl</a> • 
+          <a href="https://github.com/jonnybergdahl/Web_PlantLabelMaker/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a> • 
           <a href="https://github.com/jonnybergdahl/Web_PlantLabelMaker" target="_blank" rel="noopener noreferrer">GitHub Project</a>
         </p>
       </footer>

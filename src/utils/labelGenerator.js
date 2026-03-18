@@ -73,7 +73,7 @@ export function createLabelShape(width = 15, length = 150, radius = 3) {
 /**
  * BYGGER 3D-MODELLEN (STICKA + TEXT)
  */
-export async function createLabelModel(plantName, latinName, width = 15, length = 150, thickness = 1.6, fontPath = 'fonts/roboto_bold.json') {
+export async function createLabelModel(plantName, latinName, width = 15, length = 150, thickness = 1.6, fontPath = 'fonts/roboto_bold.json', embossOnly = false) {
     // 1. Skapa stickan (The Body)
     const shape = createLabelShape(width, length, 3);
     shape.closePath();
@@ -97,10 +97,13 @@ export async function createLabelModel(plantName, latinName, width = 15, length 
 
     // Internal helper to create "Baked" geometry (coordinates fixed in space)
     const createBakedTextGeometry = (text, size, x, y) => {
+        const textDepth = embossOnly ? 0.2 : 1.0;
+        const textZ = embossOnly ? thickness : thickness - 0.8;
+
         let geo = new TextGeometry(text, {
             font: font,
             size: size,
-            depth: 1.0,
+            depth: textDepth,
             curveSegments: 3,
             bevelEnabled: false
         });
@@ -110,7 +113,7 @@ export async function createLabelModel(plantName, latinName, width = 15, length 
 
         // Apply the transforms (Position and Rotation) directly to the vertices
         const matrix = new THREE.Matrix4();
-        const position = new THREE.Vector3(x, y, thickness - 0.8);
+        const position = new THREE.Vector3(x, y, textZ);
         const rotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI));
         const scale = new THREE.Vector3(1, 1, 1);
 
@@ -120,20 +123,30 @@ export async function createLabelModel(plantName, latinName, width = 15, length 
         return geo;
     };
 
-    // Calculate positions
+    // Create the text geometries
+    const geometries = [];
     const padding = 2;
     const availableWidth = width - (padding * 2);
     const plantSize = Math.min(6, availableWidth * 0.6);
     const latinSize = plantSize * 0.65;
     const gap = 2;
-    const startY = (width / 2) - padding;
 
-    // Create the two text geometries
-    const latinGeo = createBakedTextGeometry(latinName, latinSize, length - 5, startY);
-    const plantGeo = createBakedTextGeometry(plantName, plantSize, length - 5, startY - latinSize - gap);
+    if (latinName && latinName.trim().length > 0) {
+        // Both names present
+        const startY = (width / 2) - padding;
+        geometries.push(createBakedTextGeometry(latinName, latinSize, length - 5, startY));
+        geometries.push(createBakedTextGeometry(plantName, plantSize, length - 5, startY - latinSize - gap));
+    } else {
+        // Only plant name present, center it vertically
+        // Since text is rotated 180 degrees, the Y coordinate is the top of the text
+        // Center of label is Y=0. Label goes from -width/2 to width/2.
+        // For centered text, top should be at +plantSize/2 and bottom at -plantSize/2.
+        const startY = plantSize / 2;
+        geometries.push(createBakedTextGeometry(plantName, plantSize, length - 5, startY));
+    }
 
-    // MERGE the two text geometries into ONE single geometry
-    const mergedTextGeometry = BufferGeometryUtils.mergeGeometries([latinGeo, plantGeo]);
+    // MERGE the text geometries into ONE single geometry
+    const mergedTextGeometry = BufferGeometryUtils.mergeGeometries(geometries);
     mergedTextGeometry.computeVertexNormals();
 
     // Create ONE mesh for all text

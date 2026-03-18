@@ -148,6 +148,23 @@ main {
   line-height: 1.2;
 }
 
+.input-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.input-group.checkbox input {
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+.input-group.checkbox label {
+  margin: 0;
+}
+
 .input-group input:focus,
 .input-group select:focus {
   outline: none;
