@@ -97,7 +97,7 @@ export async function createLabelModel(plantName, latinName, width = 15, length 
 
     // Internal helper to create "Baked" geometry (coordinates fixed in space)
     const createBakedTextGeometry = (text, size, x, y) => {
-        const textDepth = embossOnly ? 0.2 : 1.0;
+        const textDepth = embossOnly ? 0.25 : 1.05;
         const textZ = embossOnly ? thickness : thickness - 0.8;
 
         let geo = new TextGeometry(text, {
