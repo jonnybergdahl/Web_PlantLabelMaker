@@ -25,15 +25,19 @@ export async function exportToSTL(bodyMesh, textGroup, filename = 'plant_label.s
     
     // 1. Export Body
     const bodyResult = exporter.parse(bodyMesh, { binary: true });
-    const bodyFilename = filename.replace('.stl', '_body.stl');
+    const bodyFilename = filename.replace('.stl', `_${bodyMesh.name || 'body'}.stl`);
     // JSZip handles ArrayBuffer, but exporter.parse(..., { binary: true }) returns a DataView.
     // We need to pass the underlying buffer.
     zip.file(bodyFilename, bodyResult.buffer);
 
     // 2. Export Text
-    const textResult = exporter.parse(textGroup, { binary: true });
-    const textFilename = filename.replace('.stl', '_text.stl');
-    zip.file(textFilename, textResult.buffer);
+    textGroup.traverse((child) => {
+        if (child.isMesh) {
+            const textResult = exporter.parse(child, { binary: true });
+            const textFilename = filename.replace('.stl', `_${child.name}.stl`);
+            zip.file(textFilename, textResult.buffer);
+        }
+    });
 
     try {
         // Generate the ZIP blob

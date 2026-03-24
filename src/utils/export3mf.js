@@ -27,7 +27,7 @@ export async function exportTo3MF(bodyMesh, textGroup, filename = 'plant_label.3
             textClone.geometry.applyMatrix4(child.matrixWorld);
 
             // Give them the same name prefix so the slicer might group them
-            textClone.name = "Text_" + (child.name || "Part");
+            textClone.name = child.name || "TextPart";
 
             exportGroup.add(textClone);
         }

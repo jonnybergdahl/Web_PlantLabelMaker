@@ -88,6 +88,7 @@ export async function createLabelModel(plantName, latinName, width = 15, length 
 
     // Create the body mesh
     const bodyMesh = new THREE.Mesh(bodyGeometry, new THREE.MeshStandardMaterial({ color: 0x808080 }));
+    bodyMesh.name = "LabelBody";
 
     // 2. Ladda font
     const loader = new FontLoader();
@@ -124,39 +125,39 @@ export async function createLabelModel(plantName, latinName, width = 15, length 
     };
 
     // Create the text geometries
-    const geometries = [];
     const padding = 2;
     const availableWidth = width - (padding * 2);
     const plantSize = Math.min(6, availableWidth * 0.6);
     const latinSize = plantSize * 0.65;
     const gap = 2;
 
+    const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const textGroup = new THREE.Group();
+
     if (latinName && latinName.trim().length > 0) {
         // Both names present
         const startY = (width / 2) - padding;
-        geometries.push(createBakedTextGeometry(latinName, latinSize, length - 5, startY));
-        geometries.push(createBakedTextGeometry(plantName, plantSize, length - 5, startY - latinSize - gap));
+        
+        const latinGeo = createBakedTextGeometry(latinName, latinSize, length - 5, startY);
+        latinGeo.computeVertexNormals();
+        const latinMesh = new THREE.Mesh(latinGeo, textMaterial);
+        latinMesh.name = latinName.replace(/\s+/g, '_');
+        textGroup.add(latinMesh);
+
+        const plantGeo = createBakedTextGeometry(plantName, plantSize, length - 5, startY - latinSize - gap);
+        plantGeo.computeVertexNormals();
+        const plantMesh = new THREE.Mesh(plantGeo, textMaterial);
+        plantMesh.name = plantName.replace(/\s+/g, '_');
+        textGroup.add(plantMesh);
     } else {
         // Only plant name present, center it vertically
-        // Since text is rotated 180 degrees, the Y coordinate is the top of the text
-        // Center of label is Y=0. Label goes from -width/2 to width/2.
-        // For centered text, top should be at +plantSize/2 and bottom at -plantSize/2.
         const startY = plantSize / 2;
-        geometries.push(createBakedTextGeometry(plantName, plantSize, length - 5, startY));
+        const plantGeo = createBakedTextGeometry(plantName, plantSize, length - 5, startY);
+        plantGeo.computeVertexNormals();
+        const plantMesh = new THREE.Mesh(plantGeo, textMaterial);
+        plantMesh.name = plantName.replace(/\s+/g, '_');
+        textGroup.add(plantMesh);
     }
-
-    // MERGE the text geometries into ONE single geometry
-    const mergedTextGeometry = BufferGeometryUtils.mergeGeometries(geometries);
-    mergedTextGeometry.computeVertexNormals();
-
-    // Create ONE mesh for all text
-    const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const combinedTextMesh = new THREE.Mesh(mergedTextGeometry, textMaterial);
-    combinedTextMesh.name = "LabelText_Merged";
-
-    // Return them. We put the mesh in a group just to keep your existing export logic happy.
-    const textGroup = new THREE.Group();
-    textGroup.add(combinedTextMesh);
 
     return { bodyMesh, textGroup };
 }

@@ -56,13 +56,19 @@ function App() {
 
   const handleDownload = async () => {
     if (meshes) {
-      await exportTo3MF(meshes.bodyMesh, meshes.textGroup, `${plantName.replace(/\s+/g, '_')}_label.3mf`);
+      const sanitizedPlant = plantName.replace(/\s+/g, '_');
+      const sanitizedLatin = latinName ? latinName.replace(/\s+/g, '_') : '';
+      const filename = sanitizedLatin ? `${sanitizedPlant}_${sanitizedLatin}_label.3mf` : `${sanitizedPlant}_label.3mf`;
+      await exportTo3MF(meshes.bodyMesh, meshes.textGroup, filename);
     }
   };
 
   const handleDownloadSTL = async () => {
     if (meshes) {
-      await exportToSTL(meshes.bodyMesh, meshes.textGroup, `${plantName.replace(/\s+/g, '_')}_label.stl`);
+      const sanitizedPlant = plantName.replace(/\s+/g, '_');
+      const sanitizedLatin = latinName ? latinName.replace(/\s+/g, '_') : '';
+      const filename = sanitizedLatin ? `${sanitizedPlant}_${sanitizedLatin}_label.stl` : `${sanitizedPlant}_label.stl`;
+      await exportToSTL(meshes.bodyMesh, meshes.textGroup, filename);
     }
   };
 
